@@ -1,0 +1,16 @@
+b2161062e1fb11c2af0c4785d3da5866 *DESCRIPTION
+1ec18ac76a21e29bf8149d7181a6f935 *LICENSE
+6f800b1d20f16b8c9b3a5412d3a9a9ce *LICENSE.note
+1c6aa572c3fc620e96d2d336286b0d1a *NAMESPACE
+a5eb6748f5730984dace378afda17a8f *NEWS.md
+c5d7b520660fa3622b14d625b961c51f *R/get_current_providers.R
+8381f1764256a1c238b2c94aa54a6939 *R/providers_data.R
+de7ad3f9dbdddee2366b14c9fad7943f *README.md
+9c5f1f9804759c550e6bcafb5b3a817e *inst/leaflet-providers_1.8.0.js
+5c0e6182f5ca890e3d2a30610b23d31d *man/get_providers.Rd
+b6b8ad233fc3525fcf089ff90a77b3c3 *man/providers_default.Rd
+f2de01a10ab0afa91352df9e94c45541 *man/providers_loaded.Rd
+c7e3179837dbb1f89bbea6971c1d61c7 *man/use_providers.Rd
+83de012ce3d88d8b1c13aaa29710bd5d *tests/testthat.R
+2c36fdb038a2bc40c704c9dcbd4f28e2 *tests/testthat/test-providers.R
+080bbf8a6a374a5be0ae959d5de7af3b *tests/testthat/test-providersdetails.R
