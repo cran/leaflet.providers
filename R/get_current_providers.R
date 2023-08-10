@@ -2,45 +2,26 @@ unpkg_url <- "https://unpkg.com/leaflet-providers"
 
 loaded_providers_env <- new.env()
 
-# this is to facilitate handling http / https protocols in leaflet
-# https://github.com/rstudio/rstudio/issues/2661
-# remove after RStudio 1.1 / next version of leaflet
-https_replace <- c(
-  "//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  "//{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png",
-  "//tile.osm.ch/switzerland/{z}/{x}/{y}.png",
-  "//{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
-  "//{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-  "//tile.openstreetmap.bzh/br/{z}/{x}/{y}.png",
-  "//tiles.openseamap.org/seamark/{z}/{x}/{y}.png",
-  "//s3.amazonaws.com/te512.safecast.org/{z}/{x}/{y}.png",
-  "//{s}.tile.openstreetmap.se/hydda/{variant}/{z}/{x}/{y}.png",
-  "//stamen-tiles-{s}.a.ssl.fastly.net/{variant}/{z}/{x}/{y}{r}.{ext}",
-  "//stamen-tiles-{s}.a.ssl.fastly.net/{variant}/{z}/{x}/{y}.{ext}",
-  "//server.arcgisonline.com/ArcGIS/rest/services/{variant}/MapServer/tile/{z}/{y}/{x}",
-  "//{s}.{base}.maps.cit.api.here.com/maptile/2.1/",
-  "//maps{s}.wien.gv.at/basemap/{variant}/normal/google3857/{z}/{y}/{x}.{format}",
-  "//geodata.nationaalgeoregister.nl/tiles/service/wmts/{variant}/EPSG:3857/{z}/{x}/{y}.png",
-  "//geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts/1.0.0/2016_ortho25/EPSG:3857/{z}/{x}/{y}.png", # nolint
-  "//nls-{s}.tileserver.com/nls/{z}/{x}/{y}.jpg",
-  "//maps-{s}.onemap.sg/v3/{variant}/{z}/{x}/{y}.png"
-)
 
 #' Fetch leaflet providers from Leaflet.js.
-#' @export
 #'
-#' @param version_num Version number with which to update leaflet providers. If `NULL`, fetches most recent version.
+#' @param version_num Version number with which to update leaflet providers.
+#'   If `NULL`, fetches most recent version.
 #'
-#' @return `leaflet_providers` object containing `providers_version_num`, `providers_data`, `providers_details_data`, `src`
+#' @return `leaflet_providers` object containing `providers_version_num`, `providers_data`,
+#'   `providers_details_data`, `src`
 #'
 #' @examples
-#' \donttest{
-#' if (require("V8") && require("jsonlite")) {
+#' if (
+#'   interactive() &&
+#'   requireNamespace("V8", quietly = TRUE) &&
+#'   requireNamespace("jsonlite", quietly = TRUE)
+#' ) {
 #'   get_providers()
 #'   get_providers("1.8.0")
 #' }
-#' }
-
+#'
+#' @export
 get_providers <- function(version_num = NULL) {
   # Load providers.js file
   if (is.null(version_num)) {
@@ -52,23 +33,11 @@ get_providers <- function(version_num = NULL) {
 
   tmp_js_lines <- paste0(readLines(js_path), collapse = "\n")
 
-  # this is to facilitate handling http / https protocols in leaflet
-  # https://github.com/rstudio/rstudio/issues/2661
-  # remove after RStudio 1.1 / next version of leaflet
-  for (url in https_replace) {
-    tmp_js_lines <- gsub(
-      paste0("https:", url),
-      url,
-      tmp_js_lines,
-      fixed = TRUE
-    )
-  }
-
   ct <- V8::v8()
 
   # create dummy Leaflet object
-  ct$eval("var L = {TileLayer : {extend: function(){return {};}},
-          Util : {extend: function(){return {};}},
+  ct$eval("var L = {TileLayer : {extend: function() { return {}; }},
+          Util : {extend: function() { return {}; }},
           tileLayer : {}}")
 
   ct$eval(tmp_js_lines)
@@ -95,7 +64,8 @@ get_providers <- function(version_num = NULL) {
     "version_num" = version_num,
     "providers" = providers,
     "providers_details" = providers_details,
-    "src" = tmp_js_lines)
+    "src" = tmp_js_lines
+  )
 
   class(providers_info) <- "leaflet_providers"
   return(providers_info)
@@ -107,42 +77,49 @@ get_providers <- function(version_num = NULL) {
 #' @return Current version number.
 #' @noRd
 get_current_version_num <- function() {
-  pkg_info <- jsonlite::fromJSON(paste0(unpkg_url, "/package.json")
-                                 )
+  pkg_info <- jsonlite::fromJSON(
+    paste0(unpkg_url, "/package.json")
+  )
   return(pkg_info$version)
 }
 
 #' Return default providers, providers_details, version, and HTML Dependency.
 #' @export
 #'
-#' @return `leaflet_providers` object containing `providers_version_num`, `providers`, `providers_details`, and `src`
+#' @return `leaflet_providers` object containing `providers_version_num`, `providers`,
+#'   `providers_details`, and `src`
 #'
 #' @examples
 #' str(providers_default(), max = 3, list.len = 4)
 #'
-
 providers_default <- function() {
   # Move .js file from tmp to sysfile
   js_filename_for_inst <- paste0("leaflet-providers_", providers_version_num, ".js")
 
   js_lines <- paste0(
     readLines(system.file(js_filename_for_inst, package = "leaflet.providers")),
-    collapse = "\n")
+    collapse = "\n"
+  )
 
   # Returns same list of obj as get_providers() except html_dependency points to /inst file
   providers_info <- list(
     "version_num" = providers_version_num,
     "providers" = providers_data,
     "providers_details" = providers_details_data,
-    "src" = js_lines)
+    "src" = js_lines
+  )
 
   class(providers_info) <- "leaflet_providers"
   return(providers_info)
 }
 
-#' Use a custom `leaflet_providers` object, e.g. providers data fetched with [get_providers], with the `leaflet` package.
+#' Use custom tile provider
 #'
-#' @param providers_info A custom `leaflet_providers` object. If `NULL`, uses default providers.
+#' Use a custom `leaflet_providers` object, e.g. providers data fetched with
+#' [get_providers], with the `leaflet` package.
+#'
+#' @param providers_info A custom `leaflet_providers` object.
+#'   If `NULL`, uses default providers.
 #' @export
 #'
 #' @examples
@@ -156,7 +133,6 @@ providers_default <- function() {
 #'   use_providers("1.4.0")
 #' }
 #' }
-
 use_providers <- function(providers_info = NULL) {
   if (is.null(providers_info)) {
     providers_info <- providers_default()
@@ -173,7 +149,8 @@ use_providers <- function(providers_info = NULL) {
 #' Return currently loaded providers, providers_details, version, and HTML Dependency.
 #' @export
 #'
-#' @return `leaflet_providers` object containing `providers_version_num`, `providers`, `providers_details`, and `src`
+#' @return `leaflet_providers` object containing `providers_version_num`, `providers`,
+#'   `providers_details`, and `src`
 #'
 #' @examples
 #' str(providers_loaded(), max = 3, list.len = 4)
